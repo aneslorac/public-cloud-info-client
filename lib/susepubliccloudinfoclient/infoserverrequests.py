@@ -161,6 +161,9 @@ def __form_url(
         url_components.append('images/states')
     elif info_type == 'types':
         url_components.append('servers/types')
+    elif info_type == 'versions':
+        url_components.append('dataversion.' + result_format + '?category=' + apply_filters)
+        return '/'.join(url_components)
     else:
         url_components.append(info_type)
     doc_type = image_state or server_type
@@ -211,7 +214,7 @@ def __inflect(plural):
     inflections = {
         'images': 'image', 'servers': 'server',
         'providers': 'provider', 'states': 'state', 'types': 'type',
-        'regions': 'region'
+        'regions': 'region', 'versions': 'version'
     }
     return inflections[plural]
 
@@ -258,10 +261,16 @@ def __parse_command_arg_filter(command_arg_filter=None):
 
 
 def __parse_server_response_data(server_response_data, info_type):
-    return json.loads(server_response_data)[info_type]
+
+    if info_type == 'versions':
+        return json.loads(server_response_data)
+    else:
+        return json.loads(server_response_data)[info_type]
+
 
 
 def __reformat(items, info_type, result_format):
+
     if result_format == 'json':
         return json.dumps(
             {info_type: items},
@@ -296,7 +305,12 @@ def __process(url, info_type, command_arg_filter, result_format):
         expected format, do the right thing
     """
     server_response_data = __get_data(url)
+
+    if info_type == 'versions' and result_format == 'xml':
+        return server_response_data
+
     resultset = __parse_server_response_data(server_response_data, info_type)
+
     if command_arg_filter:
         filters = __parse_command_arg_filter(command_arg_filter)
         resultset = __apply_filters(resultset, filters)
@@ -395,6 +409,7 @@ def get_image_data(
         image_state,
         apply_filters=command_arg_filter
     )
+
     return __process(url, info_type, command_arg_filter, result_format)
 
 
@@ -414,4 +429,23 @@ def get_server_data(
         server_type=server_type,
         apply_filters=command_arg_filter
     )
+    return __process(url, info_type, command_arg_filter, result_format)
+
+def get_versions(
+        framework,
+        result_format,
+        data_type='images',
+        command_arg_filter=None):
+    
+    info_type = 'versions'
+
+    url = __form_url(
+        framework,
+        info_type,
+        result_format,
+        None,
+        image_state=None,
+        apply_filters=data_type
+    )
+
     return __process(url, info_type, command_arg_filter, result_format)

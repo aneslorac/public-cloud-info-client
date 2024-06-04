@@ -25,6 +25,7 @@ usage: pint -h | --help
        pint image_states
           [ --json | --xml ]
        pint new_command (images|servers)
+       pint new_command ({PROVIDERS}) (images|servers)
           [ --json | --xml ]
        pint ({PROVIDERS}) server_types 
           [ --json | --xml ]
@@ -84,16 +85,17 @@ import susepubliccloudinfoclient.infoserverrequests as ifsrequest
 import susepubliccloudinfoclient.version as version
 
 
-def get_versions(
+'''def get_versions(
+        framework,
         result_format='json',
         data_type='images'):
     
     info_type = 'versions'
 
-    print('entrei func get_versions')
+    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
 
     url = form_url(
-        None,
+        framework,
         info_type,
         result_format,
         None,
@@ -104,9 +106,12 @@ def get_versions(
 
     print(url)
 
-    return ifsrequest.__process(url, info_type, command_arg_filter, result_format)
+    # return ifsrequest.__get_data(url)
 
-def form_url(
+
+    return ifsrequest.__process(url, 'versions', None, result_format)'''
+
+'''def form_url(
         framework,
         info_type,
         result_format='xml',
@@ -119,13 +124,21 @@ def form_url(
     url_components.append(ifsrequest.__get_base_url())
     url_components.append(ifsrequest.__get_api_version())
 
+    if framework:
+        url_components.append(framework)
+    else:
+        url_components.append('microsoft')
+
     if info_type == 'versions':
-        print('entrei no versions')
 
-        url_components.append('microsoft/dataversion?category=' + apply_filters)
+        url_components.append('dataversion?category=' + apply_filters)
 
-    url = '/'
-    print(ifsrequest.__get_data(url.join(url_components)))
+    url = '/'.join(url_components)
+
+    print(url)
+
+    return url'''
+
 
 try:
     provider_data = ifsrequest.get_provider_data(
@@ -150,8 +163,6 @@ command_args = docopt(
     ),
     version=version.VERSION
 )
-
-print(command_args)
 
 framework = None
 for csp in cloud_providers:
@@ -185,7 +196,7 @@ for item in server_types:
         server_type = item
         break
 
-output_format = 'plain'
+output_format = 'json'
 output_options = ('json', 'xml')
 for out in output_options:
     if command_args['--%s' % out]:
@@ -201,16 +212,13 @@ try:
 
         data_type = 'images' if command_args['images'] else 'servers'
 
-        print('entrei no new_command')
-        print(get_versions(
+        print(ifsrequest.get_versions(
+            framework,
             output_format,
             data_type))
         
-        print('sai no new_command')
-
         
     elif command_args['images']:
-        print('entrei no images')
         data = ifsrequest.get_image_data(
             framework,
             image_state,
