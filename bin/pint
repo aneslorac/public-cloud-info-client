@@ -24,8 +24,7 @@ usage: pint -h | --help
           [ --json | --xml ]
        pint image_states
           [ --json | --xml ]
-       pint new_command (images|servers)
-       pint new_command ({PROVIDERS}) (images|servers)
+       pint data_version ({PROVIDERS}) (images|servers)
           [ --json | --xml ]
        pint ({PROVIDERS}) server_types 
           [ --json | --xml ]
@@ -208,7 +207,7 @@ if command_args['--region']:
     region = command_args['--region']
 
 try:
-    if command_args['new_command']:
+    if command_args['data_version']:
 
         data_type = 'images' if command_args['images'] else 'servers'
 
